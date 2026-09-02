@@ -412,37 +412,36 @@ if st.session_state.current_step == 1:
         st.markdown("### 👁️ Live Form Preview")
         st.caption("Real-time visual rendering of the active schema.")
         
-        st.markdown(f"<div class='preview-canvas'>", unsafe_allow_html=True)
-        st.markdown(f"### {st.session_state.schema.title}")
-        if st.session_state.schema.description:
-            st.caption(st.session_state.schema.description)
-        st.markdown("---")
+        with st.container(border=True):
+            st.markdown(f"### {st.session_state.schema.title}")
+            if st.session_state.schema.description:
+                st.caption(st.session_state.schema.description)
+            st.divider()
 
-        if not st.session_state.schema.fields:
-            st.markdown("<div style='text-align: center; color: #64748B; padding: 40px;'>No fields configured yet.</div>", unsafe_allow_html=True)
-        else:
-            for f in st.session_state.schema.fields:
-                req_star = " <span style='color:#EF4444;'>*</span>" if f.required else ""
-                chip_class = f"chip-{f.type}" if f.type in ["text", "number", "date", "dropdown", "checkbox"] else "chip-text"
-                
-                st.markdown(f"**{f.label}**{req_star} <span class='type-chip {chip_class}'>{f.type}</span>", unsafe_allow_html=True)
-                
-                if f.type == "text":
-                    st.text_input(f.label, placeholder=f.placeholder or "Text value", key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
-                elif f.type == "textarea":
-                    st.text_area(f.label, placeholder=f.placeholder or "Multi-line text", key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
-                elif f.type == "number":
-                    st.number_input(f.label, value=0.0, key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
-                elif f.type == "date":
-                    st.date_input(f.label, key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
-                elif f.type == "dropdown":
-                    opts = f.options if f.options else ["No options"]
-                    st.selectbox(f.label, opts, key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
-                elif f.type == "checkbox":
-                    st.checkbox(f.description or "I confirm / agree to terms", key=f"prev_{f.id}", disabled=True)
-                st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+            if not st.session_state.schema.fields:
+                st.markdown("<div style='text-align: center; color: #64748B; padding: 40px;'>No fields configured yet. Add fields on the left.</div>", unsafe_allow_html=True)
+            else:
+                for f in st.session_state.schema.fields:
+                    req_star = " <span style='color:#EF4444;'>*</span>" if f.required else ""
+                    chip_class = f"chip-{f.type}" if f.type in ["text", "number", "date", "dropdown", "checkbox"] else "chip-text"
+                    
+                    st.markdown(f"**{f.label}**{req_star} <span class='type-chip {chip_class}'>{f.type}</span>", unsafe_allow_html=True)
+                    
+                    if f.type == "text":
+                        st.text_input(f.label, placeholder=f.placeholder or "Text value", key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
+                    elif f.type == "textarea":
+                        st.text_area(f.label, placeholder=f.placeholder or "Multi-line text", key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
+                    elif f.type == "number":
+                        st.number_input(f.label, value=0.0, key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
+                    elif f.type == "date":
+                        st.date_input(f.label, key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
+                    elif f.type == "dropdown":
+                        opts = f.options if f.options else ["No options"]
+                        st.selectbox(f.label, opts, key=f"prev_{f.id}", label_visibility="collapsed", disabled=True)
+                    elif f.type == "checkbox":
+                        st.checkbox(f.description or "I confirm / agree to terms", key=f"prev_{f.id}", disabled=True)
+                    st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
 
-        st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
         if st.button("Proceed to Document Upload ➡️", type="primary", use_container_width=True):
