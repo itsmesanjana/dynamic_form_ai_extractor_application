@@ -72,10 +72,61 @@ def check_ocr_available() -> bool:
             return False
 
 
+def _extract_text_via_ai_vision(image_bytes: bytes) -> Tuple[str, Optional[str]]:
+    """Fallback OCR using Multimodal Vision (Groq / Gemini) when local OCR binary is unavailable."""
+    import base64
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    # Try Gemini Vision
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    if gemini_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            img = Image.open(io.BytesIO(image_bytes))
+            response = model.generate_content([
+                "Extract and transcribe all text from this image exactly as written. Return ONLY the transcribed text.",
+                img
+            ])
+            if response.text:
+                return response.text.strip(), None
+        except Exception:
+            pass
+
+    # Try Groq Vision
+    groq_key = os.getenv("GROQ_API_KEY")
+    if groq_key:
+        try:
+            from groq import Groq
+            client = Groq(api_key=groq_key)
+            base64_img = base64.b64encode(image_bytes).decode("utf-8")
+            
+            completion = client.chat.completions.create(
+                model="llama-3.2-11b-vision-preview",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Extract and transcribe all readable text from this document image exactly as written. Return only the extracted text."},
+                            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_img}"}}
+                        ]
+                    }
+                ]
+            )
+            if completion.choices and completion.choices[0].message.content:
+                return completion.choices[0].message.content.strip(), None
+        except Exception:
+            pass
+
+    return "", "OCR engine (pytesseract) is not found in system PATH, and no AI Vision fallback key was provided."
+
+
 def perform_ocr_on_bytes(image_bytes: bytes) -> Tuple[str, Optional[str]]:
     """
     Performs OCR on raw image bytes.
-    Returns: (extracted_text, error_message)
+    Tries Tesseract first, with automatic fallback to Multimodal Vision OCR.
     """
     try:
         image = Image.open(io.BytesIO(image_bytes))
@@ -83,7 +134,7 @@ def perform_ocr_on_bytes(image_bytes: bytes) -> Tuple[str, Optional[str]]:
         return "", f"Could not load image file: {str(e)}"
 
     if not PYTESSERACT_AVAILABLE:
-        return "", "OCR engine (pytesseract) is not installed."
+        return _extract_text_via_ai_vision(image_bytes)
 
     try:
         # Re-verify path before run
@@ -94,17 +145,17 @@ def perform_ocr_on_bytes(image_bytes: bytes) -> Tuple[str, Optional[str]]:
             image = image.convert("RGB")
             
         text = pytesseract.image_to_string(image)
-        if not text.strip():
-            return "", None
-        return text, None
-    except Exception as e:
-        err_msg = str(e)
-        if "tesseract is not installed or it's not in your PATH" in err_msg.lower() or "tesseractnotfounderror" in err_msg.lower():
-            return "", (
-                "Tesseract OCR executable was not found in system PATH. "
-                "Please verify Tesseract is installed in C:\\Program Files\\Tesseract-OCR."
-            )
-        return "", f"OCR extraction error: {err_msg}"
+        if text and text.strip():
+            return text.strip(), None
+    except Exception:
+        pass
+
+    # Fallback to AI Vision OCR if pytesseract failed or returned empty
+    vision_text, vision_err = _extract_text_via_ai_vision(image_bytes)
+    if vision_text:
+        return vision_text, None
+
+    return "", vision_err or "No readable text detected in image."
 
 
 def perform_ocr_on_pdf_page(page_pixmap_bytes: bytes) -> Tuple[str, Optional[str]]:
