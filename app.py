@@ -283,7 +283,7 @@ with st.sidebar:
                 st.error(f"Invalid schema: {e}")
 
     st.divider()
-    st.caption("Tecnots AI Engineer Technical Assessment")
+    st.caption("FormAI Studio • Intelligent Document Processing")
 
 
 # ==========================================

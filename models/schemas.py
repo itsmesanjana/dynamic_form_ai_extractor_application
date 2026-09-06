@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, ConfigDict
 import uuid
 
 
-# Supported field types matching the technical assessment specification
+# Supported field types for dynamic form extraction
 FieldType = Literal[
     "text",          # Single-line text
     "textarea",      # Multi-line text

@@ -9,7 +9,7 @@ from models.schemas import FormSchema, FormField
 
 
 def get_job_application_template() -> FormSchema:
-    """Returns standard Job Application form schema matching assessment example."""
+    """Returns standard Job Application form schema template."""
     return FormSchema(
         title="Job Application Form",
         description="Candidate evaluation and screening intake form",

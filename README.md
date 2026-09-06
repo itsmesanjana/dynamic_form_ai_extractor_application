@@ -1,6 +1,6 @@
 # AI-Powered Dynamic Form Builder & Document Autofill Application
 
-An enterprise-ready, schema-driven web application built for the **Tecnots AI Engineer Intern Assessment**. The application allows users to dynamically design custom forms at runtime, upload documents (PDF, PNG, JPG, JPEG), extract field-specific data using Gemini AI (with PyMuPDF and OCR support), validate types and constraints, highlight missing or low-confidence data, and review/edit/save the final records.
+An enterprise-ready, schema-driven web application for Intelligent Document Processing (IDP). The application allows users to dynamically design custom forms at runtime, upload documents (PDF, PNG, JPG, JPEG), extract field-specific data using LLMs (with PyMuPDF and OCR support), validate types and constraints, highlight missing or low-confidence data, and review/edit/save the final records.
 
 ---
 
@@ -204,7 +204,7 @@ The application will open automatically in your browser at `http://localhost:850
 
 ---
 
-## 🎯 Technical Assessment Interview Preparation (15 Deep Q&A)
+## 🎯 Deep Architecture & Technical Interview Q&A (15 Core Concepts)
 
 ### Q1: How did you ensure the AI extraction is completely dynamic and not hardcoded?
 > **Answer**: In `services/ai_extractor.py`, the function `build_dynamic_prompt()` accepts the Pydantic `FormSchema` object. It dynamically iterates through `schema.fields`, generating field descriptors, expected types, and validation constraints at runtime. No field names (such as "Name" or "Email") are hardcoded in the system prompt.
